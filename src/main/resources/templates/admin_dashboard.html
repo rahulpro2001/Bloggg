@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: radial-gradient(circle at top, #1a1f36, #0b0f1a);
+            color: #eaeaea;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: rgba(11, 15, 26, 0.95);
+            backdrop-filter: blur(12px);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            background: linear-gradient(90deg, #4cc9f0, #f72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* CONTAINER CARD */
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 22px;
+            padding: 30px;
+            box-shadow: 0 20px 45px rgba(114, 9, 183, 0.35);
+        }
+
+        /* ARTICLE ROW CARD */
+        .article-row {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 18px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .article-row:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(76, 201, 240, 0.25);
+        }
+
+        /* LEFT INFO */
+        .article-info {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .article-id {
+            font-weight: 700;
+            color: #9aa3b2;
+            min-width: 40px;
+        }
+
+        .article-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .article-date {
+            font-size: 0.8rem;
+            color: #9aa3b2;
+        }
+
+        /* STATUS BADGE */
+        .badge-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* ACTIONS */
+        .action-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        .btn-create {
+            background: linear-gradient(90deg, #4cc9f0, #7209b7);
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 20px;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding: 30px 0;
+            text-align: center;
+            color: #aaa;
+            border-top: 1px solid rgba(255,255,255,0.15);
+        }
+        /* Space below fixed navbar */
+.pt-navbar {
+    padding-top: 90px; /* adjust to navbar height */
+}
+        
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<div th:insert="fragments/navbar :: navbar"></div>
+<div class="container pt-navbar">
+
+    <div th:if="${errorMessage}"
+         class="alert alert-danger alert-dismissible fade show"
+         role="alert">
+        <strong>Action not allowed!</strong>
+        <span th:text="${errorMessage}"></span>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${successMessage}"
+         class="alert alert-success alert-dismissible fade show"
+         role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"></button>
+    </div>
+
+</div>
+
+<div class="container my-5">
+
+    <div class="dashboard-card">
+
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0">📄 Manage Articles</h3>
+            <a class="btn btn-create" th:href="@{/admin/article/new}">
+                + Create Article
+            </a>
+        </div>
+
+        <!-- ARTICLE CARDS -->
+        <div th:each="a : ${articles}" class="article-row">
+
+            <!-- LEFT -->
+            <div class="article-info">
+                <div class="article-id">#<span th:text="${a.id}"></span></div>
+
+                <div>
+                    <div class="article-title" th:text="${a.title}"></div>
+                    <div class="article-date"
+                         th:text="${#temporals.format(a.createdAt,'dd MMM yyyy')}"></div>
+                </div>
+            </div>
+
+            <!-- CENTER -->
+            <div th:switch="${a.status.name()}">
+
+    <span th:case="'DRAFT'" class="badge badge-status bg-secondary">
+        DRAFT
+    </span>
+
+    <span th:case="'PENDING'" class="badge badge-status bg-warning text-dark">
+        PENDING
+    </span>
+
+    <span th:case="'APPROVED'" class="badge badge-status bg-info text-dark">
+        APPROVED
+    </span>
+
+    <span th:case="'PUBLISHED'" class="badge badge-status bg-success">
+        PUBLISHED
+    </span>
+
+    <span th:case="'REJECTED'" class="badge badge-status bg-danger">
+        REJECTED
+    </span>
+
+    <span th:case="'ARCHIVED'" class="badge badge-status bg-dark">
+        ARCHIVED
+    </span>
+
+    <span th:case="*"
+          class="badge badge-status bg-light text-dark">
+        UNKNOWN
+    </span>
+
+</div>
+
+
+
+            <!-- RIGHT -->
+            <div class="action-group">
+                <a th:href="@{/blog/{id}(id=${a.id})}"
+                   class="btn btn-outline-info btn-sm action-btn"
+                   target="_blank" title="View">👁</a>
+
+                <a th:href="@{/admin/article/edit/{id}(id=${a.id})}"
+                   class="btn btn-outline-warning btn-sm action-btn"
+                   title="Edit">✏️</a>
+
+                <a th:if="${a.status != 'PUBLISHED'}"
+                   th:href="@{/admin/article/publish/{id}(id=${a.id})}"
+                   class="btn btn-outline-success btn-sm action-btn"
+                   title="Publish">🚀</a>
+<!-- DELETE (DISABLED IF PUBLISHED) -->
+<a 
+   th:href="@{/admin/article/delete/{id}(id=${a.id})}"
+   class="btn btn-outline-danger btn-sm action-btn"
+   title="Delete"
+   onclick="return confirm('Delete this article?')">
+    🗑
+</a>
+
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<div class="modal fade" id="alreadyPublishedModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light"
+             style="border-radius: 22px; box-shadow: 0 20px 45px rgba(114,9,183,0.45);">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title">ℹ️ Already Published</h5>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>This article has already been published.</p>
+                <p class="small text-muted">
+                    You cannot publish the same article twice.
+                </p>
+            </div>
+
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary btn-sm"
+                        data-bs-dismiss="modal">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<footer>
+    © 2026 DevBlogs · Admin Panel
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:if="${alreadyPublished}">
+    const modal = new bootstrap.Modal(
+        document.getElementById('alreadyPublishedModal')
+    );
+    modal.show();
+</script>
+   <script>
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            new bootstrap.Alert(alert).close();
+        });
+    }, 4000);
+</script>
+</body>
+</html>

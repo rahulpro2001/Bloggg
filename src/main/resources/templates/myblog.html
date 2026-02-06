@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Blogs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: radial-gradient(circle at top, #1a1f36, #0b0f1a);
+            color: #eaeaea;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .page-title {
+            font-weight: 900;
+            background: linear-gradient(90deg, #4cc9f0, #f72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .blog-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 18px;
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 35px rgba(114, 9, 183, 0.35);
+        }
+
+        .badge-status {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .btn-edit {
+            background: linear-gradient(90deg, #4cc9f0, #7209b7);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 18px;
+        }
+      .summary-clamp {
+    max-height: 4.8em;          /* ~3 lines */
+    overflow: hidden;
+    position: relative;
+    line-height: 1.6;
+}
+
+/* Fade-out effect (optional but recommended) */
+.summary-clamp {
+    max-height: 5.2em;              /* ~3 lines */
+    overflow: hidden;
+    position: relative;
+    line-height: 1.6;
+}
+
+/* Hard mask to stop block overflow */
+.summary-clamp > * {
+    margin-bottom: 0.6em;
+}
+
+/* Fade overlay */
+.summary-clamp::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2.2em;
+    background: linear-gradient(
+        to bottom,
+        rgba(11, 15, 26, 0),
+        #0b0f1a 85%
+    );
+    pointer-events: none;
+}
+.summary-clamp ol,
+.summary-clamp ul {
+    padding-left: 18px;
+    margin: 0;
+}
+
+.summary-clamp li {
+    font-size: 0.95rem;
+}
+        .btn-edit.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        /* Space below fixed navbar */
+.pt-navbar {
+    padding-top: 90px; /* adjust to navbar height */
+}
+        
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div th:replace="fragments/navbar :: navbar"></div>
+<div class="container pt-navbar">
+
+    <div th:if="${errorMessage}"
+         class="alert alert-danger alert-dismissible fade show"
+         role="alert">
+        <strong>Action not allowed!</strong>
+        <span th:text="${errorMessage}"></span>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${successMessage}"
+         class="alert alert-success alert-dismissible fade show"
+         role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"></button>
+    </div>
+
+</div>
+
+<!-- PAGE HEADER -->
+<div class="container mt-5 pt-4">
+    <h2 class="page-title mb-4">📄 My Blogs</h2>
+
+    <!-- BLOG LIST -->
+    <div th:each="blog : ${blogs}" class="blog-card p-4 mb-4">
+
+        <!-- TITLE + STATUS -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 th:text="${blog.title}"></h5>
+
+            <span class="badge badge-status"
+                  th:classappend="
+                    ${blog.status.name() == 'DRAFT'} ? ' bg-secondary' :
+                    (${blog.status.name() == 'REJECTED'} ? ' bg-danger' :
+                    (${blog.status.name() == 'PENDING'} ? ' bg-warning text-dark' :
+                    (${blog.status.name() == 'APPROVED'} ? ' bg-info text-dark' :
+                    (${blog.status.name() == 'PUBLISHED'} ? ' bg-success' : ' bg-light'))))"
+                  th:text="${blog.status}">
+            </span>
+        </div>
+
+        <!-- META -->
+        <p class="small text-muted">
+            Created:
+            <span th:text="${#temporals.format(blog.createdAt,'dd MMM yyyy')}"></span>
+        </p>
+
+        <!-- SUMMARY -->
+        <p class="summary-clamp" th:text="${blog.summary}"></p>
+
+        <!-- ACTIONS -->
+        <div class="d-flex gap-2">
+
+            <!-- EDIT -->
+            <a th:if="${blog.status.name() == 'DRAFT' or blog.status.name() == 'REJECTED'}"
+               th:href="@{/user/article/edit/{id}(id=${blog.id})}"
+               class="btn btn-edit btn-sm">
+                ✏️ Edit
+            </a>
+
+            <button th:if="${blog.status.name() != 'DRAFT' and blog.status.name() != 'REJECTED'}"
+                    class="btn btn-edit btn-sm disabled">
+                ✏️ Edit
+            </button>
+  			  <a th:href="@{/user/article/preview/{id}(id=${blog.id})}"
+    		   class="btn btn-outline-info btn-sm">
+    	    👁 Preview
+   				 </a>
+
+            <!-- SUBMIT -->
+            <button type="button"
+                    th:if="${blog.status.name() == 'DRAFT' or blog.status.name() == 'REJECTED'}"
+                    class="btn btn-warning btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#submitModal"
+                    th:data-article-id="${blog.id}"
+                    th:data-article-title="${blog.title}">
+                🚀 Submit
+            </button>
+
+            <!-- PENDING -->
+            <button th:if="${blog.status.name() == 'PENDING'}"
+                    class="btn btn-secondary btn-sm"
+                    disabled>
+                ⏳ Pending
+            </button>
+
+            <!-- DELETE -->
+            <form th:if="${blog.status.name() != 'PUBLISHED' and blog.status.name() != 'APPROVED'}"
+                  th:action="@{/user/article/delete/{id}(id=${blog.id})}"
+                  method="post"
+                  onsubmit="return confirm('Are you sure you want to delete this article?')">
+
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    🗑 Delete
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div th:if="${#lists.isEmpty(blogs)}"
+         class="text-center text-muted mt-5">
+        <p>You haven’t written any blogs yet.</p>
+        <a th:href="@{/user/article/new}" class="btn btn-edit btn-sm">
+            ✍️ Create your first blog
+        </a>
+    </div>
+
+</div>
+
+<!-- ================= MODAL (ONLY ONE) ================= -->
+<div class="modal fade" id="submitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+             style="background: rgba(26,31,54,0.95);
+                    border-radius: 22px;
+                    box-shadow: 0 20px 45px rgba(114,9,183,0.45);
+                    color: #eaeaea;">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">🚀 Submit Blog for Review</h5>
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>
+                    Are you sure you want to submit
+                    <strong id="modalBlogTitle"></strong>
+                    for admin review?
+                </p>
+                <p class="small text-warning">
+                    You won’t be able to edit it while it’s under review.
+                </p>
+            </div>
+
+            <div class="modal-footer border-0">
+                <button type="button"
+                        class="btn btn-outline-light btn-sm"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <form id="submitForm" method="post">
+                    <button type="submit"
+                            class="btn btn-warning btn-sm px-4">
+                        Yes, Submit 🚀
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const submitModal = document.getElementById('submitModal');
+
+    submitModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+
+        const blogId = button.getAttribute('data-article-id');
+        const blogTitle = button.getAttribute('data-article-title');
+
+        document.getElementById('modalBlogTitle').textContent = blogTitle;
+        document.getElementById('submitForm').action =
+            `/user/article/submit/${blogId}`;
+    });
+
+</script>
+    <script>
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            new bootstrap.Alert(alert).close();
+        });
+    }, 4000);
+</script>
+</body>
+</html>

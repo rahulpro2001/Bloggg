@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Preview Article</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: radial-gradient(circle at top, #1a1f36, #0b0f1a);
+            color: #eaeaea;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* CARD */
+        .review-card {
+            background: rgba(255,255,255,0.07);
+            border-radius: 22px;
+            padding: 40px;
+            box-shadow: 0 20px 45px rgba(114,9,183,0.35);
+        }
+
+        .meta {
+            color: #9aa3b2;
+            font-size: 0.9rem;
+        }
+
+        /* STATUS */
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+       /* IMAGE CARD (COMMON) */
+.image-card {
+    background: rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    margin: 28px auto;
+}
+
+/* BANNER IMAGE — slightly smaller */
+/* BANNER IMAGE WRAPPER */
+.banner-image-card {
+    width: 100%;
+    height: 300px;              /* 👈 controls image height */
+    border-radius: 18px;
+    overflow: hidden;           /* 👈 important */
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+    margin: 25px 0;
+}
+
+/* BANNER IMAGE */
+.banner-image-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;          /* 👈 crops image perfectly */
+    border-radius: 18px;
+}
+
+/* INLINE IMAGE — even smaller */
+.inline-image-card {
+    max-width: 480px;
+}
+
+.inline-image-card img {
+    width: 100%;
+    border-radius: 14px;
+}
+
+
+        /* BUTTON */
+        .btn-edit {
+            background: linear-gradient(90deg, #4cc9f0, #7209b7);
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 20px;
+        }
+
+        .btn-edit.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* CONTENT */
+        .article-content {
+            font-size: 1.05rem;
+            line-height: 1.9;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container my-5 pt-5" style="max-width: 900px;">
+
+    <div class="review-card">
+
+        <!-- TITLE + STATUS -->
+        <div class="d-flex justify-content-between align-items-start">
+            <h2 th:text="${article.title}"></h2>
+
+            <span class="status-badge"
+                  th:classappend="
+                    ${article.status.name() == 'DRAFT'} ? ' bg-secondary' :
+                    (${article.status.name() == 'REJECTED'} ? ' bg-danger' :
+                    (${article.status.name() == 'PENDING'} ? ' bg-warning text-dark' :
+                    (${article.status.name() == 'APPROVED'} ? ' bg-info text-dark' :
+                    (${article.status.name() == 'PUBLISHED'} ? ' bg-success' : ' bg-light'))))"
+                  th:text="${article.status}">
+            </span>
+        </div>
+
+        <!-- META -->
+        <p class="meta mt-1">
+            Created on
+            <span th:text="${#temporals.format(article.createdAt,'dd MMM yyyy')}"></span>
+        </p>
+
+        <hr>
+
+        <!-- BANNER IMAGE -->
+     <div th:if="${article.imageUrl != null}"
+     class="banner-image-card">
+    <img th:src="@{/img/{file}(file=${article.imageUrl})}"
+         alt="Banner Image">
+</div>
+
+
+        <!-- SUMMARY -->
+        <h5>Summary</h5>
+        <p th:utext="${article.summary}"></p>
+
+        <!-- INLINE IMAGE -->
+       <div th:if="${article.inLineImage != null}"
+     class="image-card inline-image-card">
+    <img th:src="@{/img/{file}(file=${article.inLineImage})}"
+         alt="Inline Image">
+</div>
+
+        <!-- CONTENT -->
+        <h5>Content</h5>
+        <div class="article-content" th:utext="${article.content}"></div>
+
+        <!-- REJECTION REASON -->
+        <div th:if="${article.status.name() == 'REJECTED'}"
+             class="alert alert-danger mt-4">
+            <strong>Rejection Reason:</strong>
+            <p class="mb-0" th:text="${article.rejectionReason}"></p>
+        </div>
+
+        <hr>
+
+        <!-- ACTION -->
+        <div class="text-end mt-4">
+
+            <!-- EDIT ENABLED -->
+            <a th:if="${article.status.name() == 'DRAFT' || article.status.name() == 'REJECTED'}"
+               th:href="@{/user/article/edit/{id}(id=${article.id})}"
+               class="btn btn-edit px-4">
+                ✏️ Edit Article
+            </a>
+
+            <!-- EDIT DISABLED -->
+            <button th:if="${article.status.name() == 'PENDING'
+                            || article.status.name() == 'APPROVED'
+                            || article.status.name() == 'PUBLISHED'}"
+                    class="btn btn-edit px-4 disabled">
+                ✏️ Edit Article
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

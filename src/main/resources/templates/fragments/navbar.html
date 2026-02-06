@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="navbar"
+     class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
+
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">DevBlogs</a>
+
+        <ul class="navbar-nav ms-auto">
+
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/blogs}">Blogs</a>
+            </li>
+
+            <!-- NOT LOGGED IN -->
+            <li class="nav-item"
+                th:if="${#authorization.expression('!isAuthenticated()')}">
+                <a class="nav-link" th:href="@{/login}">Login</a>
+            </li>
+
+            <!-- LOGGED IN -->
+            <li class="nav-item dropdown"
+                th:if="${#authorization.expression('isAuthenticated()')}">
+
+                <a class="nav-link dropdown-toggle"
+                   href="#"
+                   data-bs-toggle="dropdown">
+                    <span th:text="${#authentication.principal.fullName}">User</span>
+                </a>
+
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+
+                        <!-- MY BLOGS -->
+                        <li>
+                            <a class="dropdown-item"
+                               th:href="@{/user/myblogs}">
+                                📄 My Blogs
+                            </a>
+                        </li>
+
+                        <!-- CREATE BLOG -->
+                        <li>
+                            <a class="dropdown-item"
+                               th:href="@{/user/article/new}">
+                                ✍️ Create Blog
+                            </a>
+                        </li>
+
+                        <li><hr class="dropdown-divider"></li>
+
+                        <!-- LOGOUT -->
+                        <li>
+                            <a class="dropdown-item text-danger"
+                               th:href="@{/logout}">
+                                🚪 Logout
+                            </a>
+                        </li>
+
+                    </ul>
+            </li>
+
+        </ul>
+    </div>
+</nav>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${article.title}">Article</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: radial-gradient(circle at top, #1a1f36, #0b0f1a);
+            color: #eaeaea;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: rgba(11, 15, 26, 0.9);
+            backdrop-filter: blur(12px);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            background: linear-gradient(90deg, #4cc9f0, #f72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* HERO IMAGE */
+        .article-hero {
+            height: 420px;
+            border-radius: 22px;
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 45px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        /* ARTICLE CARD */
+        .article-card {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 22px;
+            padding: 40px;
+            box-shadow: 0 18px 40px rgba(114, 9, 183, 0.35);
+        }
+
+        .article-title {
+            font-size: 2.6rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+        }
+
+        .article-meta {
+            color: #b5b5b5;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        .article-content {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: #eaeaea;
+        }
+
+        .article-content img {
+            max-width: 100%;
+            border-radius: 16px;
+            margin: 30px 0;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+        }
+
+        blockquote {
+            border-left: 4px solid #4cc9f0;
+            padding-left: 16px;
+            font-style: italic;
+            color: #d0d0d0;
+            margin: 35px 0;
+        }
+
+        /* SECOND IMAGE */
+        .article-inline-image {
+            margin: 40px 0;
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 14px 35px rgba(0,0,0,0.5);
+        }
+
+        .sidebar-title {
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .sidebar-item {
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .sidebar-item:last-child {
+            border-bottom: none;
+        }
+
+        a {
+            color: #4cc9f0;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #f72585;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding: 30px 0;
+            text-align: center;
+            color: #aaa;
+            border-top: 1px solid rgba(255,255,255,0.15);
+        }
+        
+        
+        /* INLINE IMAGE + CONTENT LAYOUT */
+.inline-section {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    margin: 40px 0;
+}
+
+.inline-section img {
+    width: 460px;              /* 👈 control size here */
+    border-radius: 18px;       /* 👈 rounded corners */
+    object-fit: cover;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 768px) {
+    .inline-section {
+        flex-direction: column;
+    }
+
+    .inline-section img {
+        width: 100%;
+    }
+}
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div th:insert="fragments/navbar :: navbar"></div>
+
+
+<div class="container my-5 pt-5">
+
+    <div class="article-hero"
+     th:style="|background-image:url('@{/img/{file}(file=${article.imageUrl})}')|">
+</div>
+    <div class="row">
+
+        <!-- MAIN ARTICLE -->
+        <div class="col-lg-8 mb-5">
+            <div class="article-card">
+
+                <h1 class="article-title" th:text="${article.title}"></h1>
+
+                <p class="article-meta">
+                    By <span th:text="${article.author.username}">Author</span>
+                    · <span th:text="${#temporals.format(article.createdAt,'dd MMM yyyy')}"></span>
+                </p>
+
+                <!-- ARTICLE BODY -->
+                <div class="article-content" th:utext="${article.content}">
+                    <p>Article content goes here.</p>
+                </div>
+
+                <!-- INLINE IMAGE (IMAGE 2) -->
+               <div class="inline-section" th:if="${article.inLineImage != null}">
+
+    <!-- INLINE IMAGE -->
+    <img th:src="@{/img/{file}(file=${article.inLineImage})}"
+         alt="Inline Image">
+
+    <!-- CONTENT -->
+    <div class="article-content"
+         th:utext="${article.content}">
+    </div>
+
+</div>
+
+            </div>
+
+            <div class="mt-4">
+                <a th:href="@{/}" class="btn btn-outline-light">
+                    ← Back to Blogs
+                </a>
+            </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="col-lg-4">
+            <div class="sidebar-card">
+                <h5 class="sidebar-title">Recent Posts</h5>
+
+                <div th:each="post : ${articles}" class="sidebar-item">
+                    <a th:href="@{/blog/{slug}(slug=${post.slug})}"
+                       th:text="${post.title}"></a>
+                    <div class="small text-muted"
+                         th:text="${#temporals.format(post.createdAt,'dd MMM yyyy')}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    © 2026 DevBlogs · Cyber Neon Reading Experience
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
