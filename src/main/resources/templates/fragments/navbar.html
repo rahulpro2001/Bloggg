@@ -6,64 +6,97 @@
      class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
 
     <div class="container">
-        <a class="navbar-brand" th:href="@{/}">DevBlogs</a>
+    <a class="navbar-brand" th:href="@{/}">Bloggg</a>
 
-        <ul class="navbar-nav ms-auto">
+    <!-- CENTER -->
+    <div class="navbar-center">
+        <span class="brand-orbit">✒️</span>
+        <span class="brand-text">Write • Inspire • Publish</span>
+    </div>
+  <ul class="navbar-nav ms-auto">
 
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/blogs}">Blogs</a>
-            </li>
+            <!-- BLOGS -->
+            
 
-            <!-- NOT LOGGED IN -->
+            <!-- ================= NOT LOGGED IN ================= -->
             <li class="nav-item"
                 th:if="${#authorization.expression('!isAuthenticated()')}">
-                <a class="nav-link" th:href="@{/login}">Login</a>
+                <a class="nav-link" th:href="@{/login}">
+                    Login
+                </a>
             </li>
 
-            <!-- LOGGED IN -->
+            <li class="nav-item"
+                th:if="${#authorization.expression('!isAuthenticated()')}">
+                <a class="nav-link" th:href="@{/reg}">
+                    Register
+                </a>
+            </li>
+
+            <!-- ================= LOGGED IN ================= -->
             <li class="nav-item dropdown"
                 th:if="${#authorization.expression('isAuthenticated()')}">
 
                 <a class="nav-link dropdown-toggle"
                    href="#"
                    data-bs-toggle="dropdown">
-                    <span th:text="${#authentication.principal.fullName}">User</span>
+                    <span th:text="${#authentication.principal.fullName}">
+                        User
+                    </span>
                 </a>
 
-              <ul class="dropdown-menu dropdown-menu-end shadow">
+                <ul class="dropdown-menu dropdown-menu-end shadow">
 
-                        <!-- MY BLOGS -->
-                        <li>
-                            <a class="dropdown-item"
-                               th:href="@{/user/myblogs}">
-                                📄 My Blogs
-                            </a>
-                        </li>
+                    <!-- ADMIN DASHBOARD (ADMIN ONLY) -->
+                    <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                        <a class="dropdown-item fw-semibold text-primary"
+                           th:href="@{/adminhome}">
+                            🛠 Admin Dashboard
+                        </a>
+                    </li>
 
-                        <!-- CREATE BLOG -->
-                        <li>
-                            <a class="dropdown-item"
-                               th:href="@{/user/article/new}">
-                                ✍️ Create Blog
-                            </a>
-                        </li>
+                    <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                        <hr class="dropdown-divider">
+                    </li>
 
-                        <li><hr class="dropdown-divider"></li>
+                    <!-- MY BLOGS -->
+                    <li>
+                        <a class="dropdown-item"
+                           th:href="@{/user/myblogs}">
+                            📄 My Blogs
+                        </a>
+                    </li>
 
-                        <!-- LOGOUT -->
-                        <li>
-                            <a class="dropdown-item text-danger"
-                               th:href="@{/logout}">
-                                🚪 Logout
-                            </a>
-                        </li>
+                    <!-- CREATE BLOG -->
+                    <li>
+                        <a class="dropdown-item"
+                           th:href="@{/user/article/new}">
+                            ✍️ Create Blog
+                        </a>
+                    </li>
 
-                    </ul>
+                    <li><hr class="dropdown-divider"></li>
+
+                    <!-- LOGOUT -->
+                    <li>
+                        <a class="dropdown-item text-danger"
+                           th:href="@{/logout}">
+                            🚪 Logout
+                        </a>
+                    </li>
+
+                </ul>
             </li>
 
         </ul>
-    </div>
+</div>
+
 </nav>
 
 </body>
 </html>
+
+
+
+
+      
