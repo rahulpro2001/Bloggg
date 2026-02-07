@@ -11,4 +11,6 @@ public interface UserRepo extends CrudRepository<User, Integer>{
 //	matching with the emtity name User not with the table name buser
 	@Query("Select u from User u where u.username=:username")
 	public User getUserByUserName(@Param("username") String username);
+
+	public boolean existsByRole(String string);
 }
