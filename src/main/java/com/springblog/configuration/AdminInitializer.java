@@ -36,7 +36,8 @@ public class AdminInitializer {
 
         User admin = new User();
         admin.setUsername(adminEmail);
-        admin.setUsername(adminEmail);
+        admin.setFirstName("RAHUL_ADMIN");
+        admin.setLastName("VERMA");
         admin.setPassword(passwordEncoder.encode(adminPassword));
         admin.setRole("ROLE_ADMIN");
         admin.setEnabled(true);
