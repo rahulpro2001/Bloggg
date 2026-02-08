@@ -5,20 +5,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.springblog.Entities.Article;
+import com.springblog.Entities.User;
 import com.springblog.Entities.enums.BlogStatus;
 import com.springblog.Exception.AlreadyPublishedException;
 import com.springblog.Repository.ArticleRepo;
+import com.springblog.Repository.UserRepo;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -27,6 +34,11 @@ public class AdminActionService {
 
 	@Autowired
 	private ArticleRepo repo;
+	@Autowired
+	private UserRepo urepo;
+	 @Value("${file.upload-dir}")
+	 private String uploadDir;
+	 
 	@Transactional
 	public void rejectArticle(int id, String reason) {
 	    Article article = repo.findById(id)
@@ -38,8 +50,7 @@ public class AdminActionService {
 	}
 
 	
-	 @Value("${file.upload-dir}")
-	 private String uploadDir;
+	
 	
 	public List<String> adminuploadMovieImageService(MultipartFile file1,MultipartFile file2) {
 		List<String> ans=new ArrayList<>(2);
@@ -80,7 +91,6 @@ public class AdminActionService {
 				    ans.add(1, fileName2);
 			}
 		  
-//		    return ans;
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -110,6 +120,7 @@ public class AdminActionService {
 	    public Article publishArticle(int id) {
 	        Article article = getApprovedArticle(id);
 	        article.setStatus(BlogStatus.PUBLISHED);
+	        article.setPublishedAt(LocalDateTime.now());
 	        repo.save(article);
 	        return article;
 	    }
@@ -138,14 +149,6 @@ public class AdminActionService {
 			return article;
 		}
 
-//	    @Transactional
-//	    public void rejectArticle(int id, String reason) {
-//	        Article article = getPendingArticle(id);
-//	        article.setStatus(BlogStatus.REJECTED);
-//	        article.setRejectionReason(reason);
-//	        repo.save(article);
-//	    }
-		
 		
 		   @Transactional
 		    public void softDelete(Article article) {
@@ -153,5 +156,25 @@ public class AdminActionService {
 		        article.setStatus(BlogStatus.ARCHIVED); // recommended
 		        repo.save(article);
 		    }
+		   
+//done
+			 public Page<Article> getActiveBlogs(int page, int size) {
+			        Pageable pageable = PageRequest.of(
+			            page,
+			            size,
+			            Sort.by("createdAt").descending()
+			        );
+			        return repo.findAll(pageable);
+			 }
+			 public void adminSaveArticle(Article article) {
+				 repo.save(article);
+			 }
+
+
+			 public User getLoggedInUserByUserName(String name) {
+				// TODO Auto-generated method stub
+					User u=urepo.getUserByUserName(name);
+				return u;
+			 }
 	
 }
