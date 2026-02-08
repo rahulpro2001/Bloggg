@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -22,36 +22,31 @@ import com.springblog.Entities.Article;
 import com.springblog.Entities.User;
 import com.springblog.Entities.enums.BlogStatus;
 import com.springblog.Exception.AlreadyPublishedException;
-import com.springblog.Repository.ArticleRepo;
-import com.springblog.Repository.UserRepo;
 import com.springblog.Service.AdminActionService;
 import com.springblog.security.CustomUserDetails;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @Controller
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminArticeController {
-
-	@Autowired
-	private ArticleRepo repo;
-	@Autowired
-	private UserRepo urepo;
 	
 	@Autowired
     private AdminActionService articleService;
 	
 	@GetMapping("/adminhome")
-	public String PostLoginSuccess(Model m) {
-		List<Article> articles = (List<Article>) repo.findAll();
-		m.addAttribute("articles", articles);
-		return "admin_dashboard";
+	public String PostLoginSuccess(@RequestParam(defaultValue = "0") int page,Model m) {
+		Page<Article> articlePage = (Page<Article>) articleService.getActiveBlogs(page, 5);
+	    
+	    m.addAttribute("articles", articlePage.getContent()); // The 5 records
+	    m.addAttribute("currentPage", page);
+	    m.addAttribute("totalPages", articlePage.getTotalPages());
+	    m.addAttribute("isFirst", articlePage.isFirst());
+	    m.addAttribute("isLast", articlePage.isLast());
+	    return "admin_dashboard";
 	}
 	
 	@GetMapping("/admin/article/edit/{authorId}")
 	public String GoToEditArticlePage(@PathVariable int authorId,Model m) {
-		Article Editarticle = new Article();
-		Editarticle= repo.findById(authorId).get();
+		Article Editarticle = articleService.getById(authorId);
 		m.addAttribute("article", Editarticle);
 		return "admin_edit_article";
 	}
@@ -65,40 +60,10 @@ public class AdminArticeController {
 		updateArticle.setCreatedAt(article.getCreatedAt());
 		updateArticle.setId(article.getId());
 		updateArticle.setSlug(article.getSlug());
-		repo.save(updateArticle);
-		List<Article> articles = (List<Article>) repo.findAll();
-		m.addAttribute("articles", articles);
-		return "admin_dashboard";
-	}
-	
-//	@GetMapping("/admin/article/delete/{authorId}")
-//	public String AdminDeleteArticle(@PathVariable int authorId, Model m) {
-//		repo.deleteById(authorId);		
-//		List<Article> articles = (List<Article>) repo.findAll();
-//		m.addAttribute("articles", articles);
-//		return "admin_dashboard";
-//	}
+		articleService.adminSaveArticle(updateArticle);
+        return "redirect:/adminhome";
 
-	
-	
-//	@GetMapping("/admin/article/delete/{id}")
-//	public String adminSoftDeleteArticle(@PathVariable int id, Model model) {
-//
-//	    Article article = repo.findById(id)
-//	            .orElseThrow(() -> new EntityNotFoundException("Article not found"));
-//
-//	    // 🔒 soft delete
-//	    article.setActive(false);
-//	    article.setStatus(BlogStatus.ARCHIVED);
-//
-//	    repo.save(article);
-//
-//	    // reload dashboard data
-//	    List<Article> articles = repo.findByActiveTrueOrderByCreatedAtDesc();
-//	    model.addAttribute("articles", articles);
-//
-//	    return "admin_dashboard";
-//	}
+	}
 	
 	
 	@GetMapping("/admin/article/delete/{id}")
@@ -136,25 +101,19 @@ public class AdminArticeController {
 	public String AdminAddNewArticle(@ModelAttribute Article article,Model m,Principal user) {
 		System.out.println(article);
 		article.setCreatedAt(LocalDateTime.now());
-		User u=urepo.getUserByUserName(user.getName());
+		User u = articleService.getLoggedInUserByUserName(user.getName());
+//		User u=urepo.getUserByUserName(user.getName());
 		System.out.println(u);
 		article.setActive(true);
 		article.setAuthor(u);
-		repo.save(article);
+		articleService.adminSaveArticle(article);
+	    return "redirect:/adminhome";
 
-		List<Article> articles = (List<Article>) repo.findAll();
-		m.addAttribute("articles", articles);
-		return "admin_dashboard";
 	}
-//	/blog/{slug}
-	
-	 // VIEW ARTICLE FOR REVIEW
+
     @GetMapping("/blog/{id}")
     public String reviewArticle(@PathVariable int id, Model model) {
-
-//    	if()
         Article article = articleService.getById(id);
-        
         model.addAttribute("article", article);
         return "admin_review_article";
     }
@@ -166,13 +125,6 @@ public class AdminArticeController {
         return "redirect:/adminhome?approved=true";
     }
     
-//    @GetMapping("admin/article/publish/{id}")
-//    public String publishArticle(@PathVariable int id) {
-//
-//        articleService.publishArticle(id);
-//        return "redirect:/adminhome?published=true";
-//    }
-
     
     @GetMapping("/admin/article/publish/{id}")
     public String publishArticle(@PathVariable int id,
@@ -184,15 +136,14 @@ public class AdminArticeController {
 
  		        redirectAttributes.addFlashAttribute(
  		            "errorMessage",
- 		            "Article not approved and cannot be deleted."
+ 		            "Article not approved and cannot be published."
  		        );
  		        return "redirect:/adminhome";
  		    }
         	 
             Article article = articleService.publishArticle(id);
-            
-//    	    article.setStatus(BlogStatus.PUBLISHED);
-            repo.save(article);
+            articleService.adminSaveArticle(article);
+//            repo.save(article);
 
             redirectAttributes.addFlashAttribute("published", true);
             return "redirect:/adminhome";
@@ -220,8 +171,8 @@ public class AdminArticeController {
 	        @RequestParam("inlineImage") MultipartFile inlineImage,
 	        @AuthenticationPrincipal CustomUserDetails user) {
 
-	    Article existing = repo.findById(id).get();
-	  
+	    Article existing = articleService.getById(id);
+
 	    if(!updatedArticle.getTitle().isEmpty())
 	    existing.setTitle(updatedArticle.getTitle());
 	    if(!updatedArticle.getSummary().isEmpty())
@@ -241,7 +192,8 @@ public class AdminArticeController {
 	        System.out.println(images);
 	    	existing.setImageUrl(images.get(1));
 	    }
-	    repo.save(existing);
+	    articleService.adminSaveArticle(existing);
+//	    repo.save(existing);
 	    return "redirect:/adminhome";
 	}
 	
