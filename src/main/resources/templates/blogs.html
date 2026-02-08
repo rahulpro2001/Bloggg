@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>DevBlogs</title>
+    <title>Bloggg</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap -->
@@ -19,9 +19,9 @@
 <!-- HERO -->
 <section class="hero text-center mt-5">
     <div class="container">
-        <h1>Code. Create. Connect.</h1>
+        <h1>Write. Read. Connect.</h1>
         <p class="lead mt-3">
-            A next-gen blogging platform for developers & engineers.
+            A next-gen blogging platform for writers and Authors.
         </p>
     </div>
 </section>
@@ -33,25 +33,24 @@
         <!-- BLOG LIST -->
         <div class="col-lg-8">
 
-            <!-- FEATURED 
+            <!-- FEATURED -->
             <div class="blog-card p-4 mb-4">
                 <span class="badge badge-featured mb-2">FEATURED</span>
-                <h3 th:text="${featuredBlogs[0].title}"></h3>
-                <p class="text-muted" th:text="${featuredBlogs[0].summary}"></p>
-                <a th:href="@{/blog/{slug}(slug=${featuredBlogs[0].slug})}"
+                <h3 class="gradient-text" th:text="${featuredBlogs.title}"></h3>
+                <p  th:utext="${featuredBlogs.summary}"></p>
+                <a th:href="@{/article/{slug}(slug=${featuredBlogs.slug})}"
                    class="btn btn-read btn-sm">
                     Read Article →
                 </a>
             </div>
--->
+
             <!-- ALL BLOGS -->
             <div th:each="blog : ${blogs}" class="blog-card p-4 mb-3">
                 <div class="blog-row">
 
     <!-- LEFT CONTENT -->
     <div class="blog-content">
-        <h5 th:text="${blog.title}"></h5>
-
+		<h3 class="small gradient-text mb-2" th:text="${blog.title}"></h3>
         <p class="small text-muted">
             <span th:text="${blog.author.username}"></span>
             ·
@@ -61,8 +60,16 @@
 <p class="blog-summary"
    th:utext="${blog.summary}">
 </p>
+<!-- 
 
-        <a th:href="@{/article/{id}(id=${blog.id})}" class="fw-semibold">
+   <a th:href="@{/article/{id}(id=${blog.id})}" class="fw-semibold" style="color: #4cc9f0">
+            Continue reading →
+        </a>
+
+
+ -->
+     
+           <a th:href="@{/article/{slug}(slug=${blog.slug})}" class="fw-semibold" style="color: #4cc9f0">
             Continue reading →
         </a>
     </div>
@@ -74,8 +81,30 @@
          alt="Article image">
 
 </div>
+
             </div>
 
+
+<div th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center mt-5 mb-5">
+                <div>
+                    <a th:if="${!isFirst}" th:href="@{/(page=${currentPage - 1})}" 
+                       class="btn btn-outline-info btn-sm rounded-pill px-4 shadow-sm">
+                       &larr; Newer
+                    </a>
+                </div>
+
+                <div class="text-muted small fw-bold" style="letter-spacing: 1px;">
+                    <span th:text="${currentPage + 1}">1</span> / <span th:text="${totalPages}">1</span>
+                </div>
+
+                <div>
+                    <a th:if="${!isLast}" th:href="@{/(page=${currentPage + 1})}" 
+                       class="btn btn-outline-info btn-sm rounded-pill px-4 shadow-sm">
+                       Older &rarr;
+                    </a>
+                </div>
+            </div>
+            
         </div>
 
         <!-- SIDEBAR -->
@@ -84,7 +113,7 @@
                 <h5>Recent Uploads</h5>
                 <ul class="list-unstyled">
                     <li th:each="rb : ${recentBlogs}" class="mb-2">
-                        <a th:href="@{/blog/{slug}(slug=${rb.slug})}"
+                        <a th:href="@{/article/{slug}(slug=${rb.slug})}"
                            th:text="${rb.title}"></a>
                     </li>
                 </ul>
@@ -93,17 +122,13 @@
             <div class="sidebar-card p-4 text-center">
                 <h6>Become an Author</h6>
                 <p class="text-muted small">Share real-world knowledge.</p>
-                <a th:href="@{/login}" class="btn btn-read btn-sm">Start Writing</a>
+                <a th:href="@{/user/article/new}" class="btn btn-read btn-sm">Start Writing</a>
             </div>
         </div>
 
     </div>
 </div>
 
-<!-- FOOTER -->
-<footer>
-    © 2026 DevBlogs · Cyber Neon Theme
-</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
