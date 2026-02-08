@@ -25,7 +25,7 @@ public class Myconfig{
 	        .csrf(csrf -> csrf.disable())
 	        .authorizeHttpRequests(auth -> auth
 	            .requestMatchers(
-	                "/", "/mylogin", "/article/**", "/useradd",
+	                "/", "/mylogin", "/article/**", "/useradd","/style.css",
 	                "/img/**", "/home", "/css/**", "/js/**", "/reg","/register","/public/**"
 	            ).permitAll()
 	            .requestMatchers("/admin/**").hasRole("ADMIN")
