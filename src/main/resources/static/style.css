@@ -20,6 +20,28 @@
     pointer-events: none;
 }
 
+/* Gradient Title Styling */
+.gradient-text {
+    font-weight: 800;
+    background: linear-gradient(90deg, #4cc9f0, #f72585);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* Fix Featured Summary Visibility */
+.featured-summary {
+    color: rgba(255, 255, 255, 0.85) !important; /* Brighter than standard text-muted */
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Standard Blog Summary visibility */
+.blog-summary {
+    color: #b5b5b5;
+    margin-bottom: 15px;
+}
+
 .brand-orbit {
     font-size: 1.4rem;
     animation: floatGlow 3.5s ease-in-out infinite;
