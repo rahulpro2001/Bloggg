@@ -260,6 +260,35 @@
 
         </div>
     </div>
+    
+    <div th:if="${totalPages > 0}" class="d-flex justify-content-between align-items-center mt-5 mb-5 px-2">
+    
+    <div>
+        <a th:if="${!isFirst}" 
+           th:href="@{/user/myblogs(page=${currentPage - 1})}" 
+           class="btn btn-outline-info btn-sm rounded-pill px-3">
+           &larr; Previous
+        </a>
+        <button th:if="${isFirst}" class="btn btn-outline-secondary btn-sm rounded-pill px-3" disabled>
+            &larr; Previous
+        </button>
+    </div>
+
+    <div class="small text-muted fw-bold">
+        PAGE <span th:text="${currentPage + 1}">1</span> / <span th:text="${totalPages}">1</span>
+    </div>
+
+    <div>
+        <a th:if="${!isLast}" 
+           th:href="@{/user/myblogs(page=${currentPage + 1})}" 
+           class="btn btn-outline-info btn-sm rounded-pill px-4">
+           Next &rarr;
+        </a>
+        <button th:if="${isLast}" class="btn btn-outline-secondary btn-sm rounded-pill px-4" disabled>
+            Next &rarr;
+        </button>
+    </div>
+</div>
 
     <!-- EMPTY STATE -->
     <div th:if="${#lists.isEmpty(blogs)}"
