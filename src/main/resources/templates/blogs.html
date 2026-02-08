@@ -34,7 +34,7 @@
         <div class="col-lg-8">
 
             <!-- FEATURED -->
-            <div class="blog-card p-4 mb-4">
+            <div class="blog-card p-4 mb-4" th:if="${featuredBlogs != null}">
                 <span class="badge badge-featured mb-2">FEATURED</span>
                 <h3 class="gradient-text" th:text="${featuredBlogs.title}"></h3>
                 <p  th:utext="${featuredBlogs.summary}"></p>
