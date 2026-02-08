@@ -21,15 +21,14 @@
             <!-- ================= NOT LOGGED IN ================= -->
             <li class="nav-item"
                 th:if="${#authorization.expression('!isAuthenticated()')}">
-                <a class="nav-link" th:href="@{/login}">
-                    Login
+                <a class="nav-link" th:href="@{/login}"><b>Login</b>
                 </a>
             </li>
 
             <li class="nav-item"
                 th:if="${#authorization.expression('!isAuthenticated()')}">
                 <a class="nav-link" th:href="@{/reg}">
-                    Register
+                    <b>Register</b>
                 </a>
             </li>
 

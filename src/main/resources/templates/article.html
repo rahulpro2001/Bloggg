@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${article.title}">Article</title>
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -65,11 +64,17 @@
             color: #eaeaea;
         }
 
-        .article-content img {
-            max-width: 100%;
-            border-radius: 16px;
-            margin: 30px 0;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+        /* FLOATING INLINE IMAGE */
+        .inline-img-float {
+            float: left;
+            width: 40%;
+            max-width: 400px;
+            margin-right: 25px;
+            margin-bottom: 15px;
+            border-radius: 18px;
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.4);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+            object-fit: cover;
         }
 
         blockquote {
@@ -78,13 +83,6 @@
             font-style: italic;
             color: #d0d0d0;
             margin: 35px 0;
-        }
-
-        /* SECOND IMAGE */
-        .article-inline-image {
-            margin: 40px 0;
-            border-radius: 18px;
-            overflow: hidden;
         }
 
         /* SIDEBAR */
@@ -106,18 +104,8 @@
             border-bottom: 1px solid rgba(255,255,255,0.12);
         }
 
-        .sidebar-item:last-child {
-            border-bottom: none;
-        }
-
-        a {
-            color: #4cc9f0;
-            text-decoration: none;
-        }
-
-        a:hover {
-            color: #f72585;
-        }
+        a { color: #4cc9f0; text-decoration: none; }
+        a:hover { color: #f72585; }
 
         footer {
             margin-top: 60px;
@@ -126,23 +114,17 @@
             color: #aaa;
             border-top: 1px solid rgba(255,255,255,0.15);
         }
-        
-        
-        /* INLINE IMAGE + CONTENT LAYOUT */
-.inline-section {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
-    margin: 40px 0;
-}
 
-.inline-section img {
-    width: 460px;              /* 👈 control size here */
-    border-radius: 18px;       /* 👈 rounded corners */
-    object-fit: cover;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
-}
-.brand-orbit {
+        /* Responsive Fix for Float */
+        @media (max-width: 768px) {
+            .inline-img-float {
+                float: none;
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+        }
+        .brand-orbit {
     font-size: 1.4rem;
     animation: floatGlow 3.5s ease-in-out infinite;
     filter: drop-shadow(0 0 6px rgba(76, 201, 240, 0.8));
@@ -191,63 +173,40 @@
     gap: 10px;
     pointer-events: none;
 }
-
-/* Responsive: stack on small screens */
-@media (max-width: 768px) {
-    .inline-section {
-        flex-direction: column;
-    }
-
-    .inline-section img {
-        width: 100%;
-    }
-}
+   
     </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <div th:insert="fragments/navbar :: navbar"></div>
-
 
 <div class="container my-5 pt-5">
 
     <div class="article-hero"
-     th:style="|background-image:url('@{/img/{file}(file=${article.imageUrl})}')|">
-</div>
-    <div class="row">
+         th:style="|background-image:url('@{/img/{file}(file=${article.imageUrl})}')|">
+    </div>
 
-        <!-- MAIN ARTICLE -->
+    <div class="row">
         <div class="col-lg-8 mb-5">
             <div class="article-card">
-
                 <h1 class="article-title" th:text="${article.title}"></h1>
-
                 <p class="article-meta">
                     By <span th:text="${article.author.username}">Author</span>
                     · <span th:text="${#temporals.format(article.createdAt,'dd MMM yyyy')}"></span>
                 </p>
 
-                <!-- ARTICLE BODY -->
-                <div class="article-content" th:utext="${article.content}">
-                    <p>Article content goes here.</p>
+                <div class="article-content">
+                    
+                    <img th:if="${article.inLineImage != null}" 
+                         th:src="@{/img/{file}(file=${article.inLineImage})}" 
+                         class="inline-img-float" 
+                         alt="Article detail image">
+
+                    <div th:utext="${article.content}"></div>
+                    
+                    <div style="clear: both;"></div>
                 </div>
-
-                <!-- INLINE IMAGE (IMAGE 2) -->
-               <div class="inline-section" th:if="${article.inLineImage != null}">
-
-    <!-- INLINE IMAGE -->
-    <img th:src="@{/img/{file}(file=${article.inLineImage})}"
-         alt="Inline Image">
-
-    <!-- CONTENT -->
-    <div class="article-content"
-         th:utext="${article.content}">
-    </div>
-
-</div>
-
             </div>
 
             <div class="mt-4">
@@ -257,13 +216,11 @@
             </div>
         </div>
 
-        <!-- SIDEBAR -->
         <div class="col-lg-4">
             <div class="sidebar-card">
                 <h5 class="sidebar-title">Recent Posts</h5>
-
                 <div th:each="post : ${articles}" class="sidebar-item">
-                    <a th:href="@{/blog/{slug}(slug=${post.slug})}"
+                    <a th:href="@{/article/{slug}(slug=${post.slug})}"
                        th:text="${post.title}"></a>
                     <div class="small text-muted"
                          th:text="${#temporals.format(post.createdAt,'dd MMM yyyy')}">
@@ -271,13 +228,9 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
-<footer>
-    © 2026 DevBlogs · Cyber Neon Reading Experience
-</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
