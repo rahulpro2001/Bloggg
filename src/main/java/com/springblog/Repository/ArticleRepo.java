@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import com.springblog.Entities.Article;
@@ -31,9 +32,15 @@ public interface ArticleRepo extends CrudRepository<Article, Integer>{
     // admin / trash view (optional)
     List<Article> findByActiveFalse();
     
-    List<Article> findByAuthorIdAndActiveTrueAndStatusNot(
+    Page<Article> findByAuthorIdAndActiveTrueAndStatusNot(
             int authorId,
-            BlogStatus status
+            BlogStatus status,
+            Pageable pageable
     );
-
+	Page<Article> findByActiveTrue(Pageable pageable);
+	Page<Article> findAll(Pageable pageable);
+	@Query("SELECT a FROM Article a WHERE a.active = true AND a.status = 'PUBLISHED' ORDER BY a.views DESC")
+	List<Article> findHighestViewedBlog(Pageable pageable);
+	List<Article> findTop7ByStatusOrderByPublishedAtDesc(BlogStatus published);
+	Optional<Article> findBySlug(String slug);
 }
