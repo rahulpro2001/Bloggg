@@ -51,13 +51,11 @@
     
     <div class="blog-content">
 		<h3 class="small gradient-text mb-2" th:text="${blog.title}"></h3>
-     <!-- LEFT CONTENT
-		<p class="small text-muted">
-            <span th:text="${blog.author.username}"></span>
-            ·
-            <span th:text="${#dates.format(blog.publishedAt,'dd MMM yyyy')}"></span>
+     <!-- LEFT CONTENT -->
+	  <p class="small">      
+<span th:text="${#temporals.format(blog.publishedAt,'dd MMM yyyy')}" th:if="${blog.publishedAt != null}"></span>
         </p>
--->
+
 <p class="blog-summary"
    th:utext="${blog.summary}">
 </p>
