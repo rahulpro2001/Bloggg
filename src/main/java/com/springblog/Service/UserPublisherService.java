@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -25,6 +25,7 @@ import com.springblog.Entities.Article;
 import com.springblog.Entities.User;
 import com.springblog.Entities.enums.BlogStatus;
 import com.springblog.Repository.ArticleRepo;
+import com.springblog.Repository.UserRepo;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -33,7 +34,14 @@ public class UserPublisherService {
 	
 	@Autowired
 	private ArticleRepo articleRepo;
-	 public List<Article> getActivePublishedBlogs(int page, int size) {
+	
+	@Autowired
+	private UserRepo urepo;
+	
+	 @Value("${file.upload-dir}")
+	 private String uploadDir;
+
+	 public Page<Article> getActivePublishedBlogs(int page, int size) {
 
 	        Pageable pageable = PageRequest.of(
 	            page,
@@ -47,109 +55,18 @@ public class UserPublisherService {
 	                pageable
 	            );
 
-//	        return blogs.stream()
-//	                    .map(this::mapToDTO)
-//	                    .toList();
-//	    }
-
-//	    private BlogResponseDTO mapToDTO(BlogSS blog) {
-//	        BlogResponseDTO dto = new BlogResponseDTO();
-//	        dto.setTitle(blog.getTitle());
-//	        dto.setSlug(blog.getSlug());
-//	        dto.setSummary(blog.getSummary());
-//	        dto.setPublishedAt(blog.getPublishedAt());
-//	        dto.setAuthorName(blog.getAuthor().getUsername());
-//	        return dto;
-//	    }
-	        return articles.getContent();
-//	        return (List<Article>) articles;
+	        return articles;
 	 }
 	 
-	 
-	 @Value("${file.upload-dir}")
-	 private String uploadDir;
-	
-//	public List<String> uploadMovieImageService(MultipartFile file1,MultipartFile file2) {
-//		List<String> ans=new ArrayList<>(2);
-//		String fileName1 ="";
-//	    String fileName2 = "";
-//
-//		try{
-//			if(file1.isEmpty() && file2.isEmpty())return ans;
-//			File folder = new File(uploadDir);
-//			if (!folder.exists()) folder.mkdirs();
-//			if(!file1.isEmpty()) {
-//			    UUID uuid1 = UUID.randomUUID();
-//		        String uuidAsString1 = uuid1.toString();
-//		        String originalName1 = file1.getOriginalFilename();
-//		        String extension1 = originalName1.substring(originalName1.lastIndexOf("."));
-//			    fileName1 = uuidAsString1.substring(0, 30)+extension1;
-//			    fileName1=fileName1.replaceAll("-", "");
-//			    System.out.println(fileName1);
-//			    Path path1 = Paths.get(uploadDir + fileName1);
-//				Files.copy(file1.getInputStream(), path1, StandardCopyOption.REPLACE_EXISTING);
-//			    System.out.println("uploaded1");
-//
-//				ans.add(0, fileName1);
-//
-//			}
-//			if(!file2.isEmpty()) {
-//				  UUID uuid2 = UUID.randomUUID();
-//			        String uuidAsString2 = uuid2.toString();
-//			        String originalName2 = file2.getOriginalFilename();
-//			        String extension2 = originalName2.substring(originalName2.lastIndexOf("."));
-//				    fileName2 = uuidAsString2.substring(0, 30)+extension2;
-//				    fileName2=fileName2.replaceAll("-", "");
-//				    System.out.println(fileName2);
-//				    Path path2 = Paths.get(uploadDir + fileName2);
-//					Files.copy(file2.getInputStream(), path2, StandardCopyOption.REPLACE_EXISTING);
-//				    System.out.println("uploaded2");
-////				    ans.add(fileName2);
-//				    ans.add(1, fileName2);
-//			}
-//		  
-////		    return ans;
-//		}catch(Exception e) {
-//			e.printStackTrace();
-//		}
-//		return ans;
-//	}
-//	
-	 
-//	 public List<String> uploadMovieImageService(
-//		        MultipartFile bannerImage,
-//		        MultipartFile inlineImage) {
-//
-//		    List<String> ans = new ArrayList<>(2);
-//
-//		    try {
-//		        if ((bannerImage == null || bannerImage.isEmpty()) &&
-//		            (inlineImage == null || inlineImage.isEmpty())) {
-//		            return ans;
-//		        }
-//
-//		        File folder = new File(uploadDir);
-//		        if (!folder.exists()) folder.mkdirs();
-//
-//		        // ✅ Banner image FIRST
-//		        if (bannerImage != null && !bannerImage.isEmpty()) {
-//		            String bannerFileName = saveFile(bannerImage);
-//		            ans.add(bannerFileName); // index 0
-//		        }
-//
-//		        // ✅ Inline image SECOND
-//		        if (inlineImage != null && !inlineImage.isEmpty()) {
-//		            String inlineFileName = saveFile(inlineImage);
-//		            ans.add(inlineFileName); // index 1 (if banner exists)
-//		        }
-//
-//		    } catch (Exception e) {
-//		        e.printStackTrace();
-//		    }
-//
-//		    return ans;
-//		}
+	 public void userSaveArticle(Article article) {
+		 articleRepo.save(article);
+	 }
 
+
+	 public void saveUser(User u) {
+		 urepo.save(u);
+	 }
+	
 	 private String saveFile(MultipartFile file) throws IOException {
 		    UUID uuid = UUID.randomUUID();
 		    String originalName = file.getOriginalFilename();
@@ -180,11 +97,17 @@ public class UserPublisherService {
         return articleRepo.findByAuthorAndActiveTrue(user);
     }
     
-    public List<Article> getMyActiveNonArchivedBlogs(User user) {
-        return articleRepo.findByAuthorIdAndActiveTrueAndStatusNot(
-                user.getId(),
-                BlogStatus.ARCHIVED
-        );
+//    public List<Article> getMyActiveNonArchivedBlogs(User user) {
+//        return articleRepo.findByAuthorIdAndActiveTrueAndStatusNot(
+//                user.getId(),
+//                BlogStatus.ARCHIVED
+//        );
+//    }
+    
+    public Page<Article> getMyActiveNonArchivedBlogs(User user, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        // Assuming you have a method in your Repository like findByUserAndStatusNot(...)
+        return articleRepo.findByAuthorIdAndActiveTrueAndStatusNot(user.getId(), BlogStatus.ARCHIVED, pageable);
     }
     @Transactional
     public void resubmitArticle(Article article) {
@@ -222,5 +145,52 @@ public class UserPublisherService {
 
         return result;
     }
+
+
+	public Article getActiveAndHighestViewsBlog() {
+		// Pass a PageRequest for size 1 to get only the top one
+		List<Article> results = articleRepo.findHighestViewedBlog(PageRequest.of(0, 1));
+		Article topBlog = results.isEmpty() ? null : results.get(0);;
+		return topBlog;
+	}
+
+
+//	public  List<Article> getRecentCreatedBlog() {
+//		// TODO Auto-generated method stub
+//		List<Article> articles = articleRepo. 
+//		return articles;
+//	}
+
+
+	public List<Article> getRecentUploadedArticles(BlogStatus published) {
+		// TODO Auto-generated method stub
+		List<Article> articles = articleRepo.findTop7ByStatusOrderByPublishedAtDesc(published);
+		return articles;
+	}
+
+
+	public void IncreasePageViews(Article a) {
+		// TODO Auto-generated method stub
+		a.setViews(a.getViews()+1);
+		articleRepo.save(a);
+		
+	}
+
+	public Article findBySlug(String slug) {
+		Article a = articleRepo.findBySlug(slug)
+		        .orElseThrow(() -> new EntityNotFoundException("Article not found with slug: " + slug));
+		return a;
+
+	}
+
+	public User getUserByUserName(String name) {
+	    User user = urepo.getUserByUserName(name);
+	    return user;
+	}
+
+	public Article findById(int id) {
+	    Article article = articleRepo.findById(id).get();
+	    return article;
+	}
 
 }
